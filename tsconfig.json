@@ -1,0 +1,10 @@
+{
+    "extends": "./src/tsconfig",
+    "compilerOptions": {
+        "outDir": "./lib",
+        "declarationDir": "./lib"
+    },
+    "files": [
+        "./src/index.ts"
+    ]
+}
