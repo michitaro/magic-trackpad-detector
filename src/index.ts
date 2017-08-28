@@ -1,55 +1,28 @@
 export class MagicTrackpadDetector {
     private history = new RingBuffer<[number, number]>(20)
-
-    private T = 160
-    private maxN = Math.ceil(this.T / (1000 / 60))
-    private N = Math.floor(0.8 * this.T / (1000 / 60))
-    // private halfLife = 200
+    tolerance = 7 // ms
+    interval = 1000 / 60 // events per second
+    minN = 5
 
     inertial(e: WheelEvent) {
+        const h = this.history
         const t0 = performance.now()
         const d0 = e.deltaY
-        this.history.push([t0, d0])
-
-        const samples: [number, number][] = []
-        for (let i = 1; i <= this.history.length; ++i) {
-            const [t, d] = this.history.at(-i)!
-            if (t0 - t > this.T || d * d0 < 0)
-                break
-            samples.push([t, d])
-        }
-
-        if (samples.length < this.N || samples.length > this.maxN) {
-            // console.log({ N: samples.length })
+        h.push([t0, d0])
+        if (h.length < this.minN)
             return false
+        for (let i = this.minN; i > 1; --i) {
+            const o = h.at(-i)
+            const n = h.at(-i + 1)
+            const dt = n[0] - o[0]
+            if (dt < this.interval - this.tolerance || this.interval + this.tolerance < dt)
+                return false
+            if (n[1] * o[1] < 0 || n[1] / o[1] > 1)
+                return false
         }
-
-        // const s1 = samples[samples.length - 1]
-        // const s0 = samples[0]
-        // const dt = s0[0] - s1[0]
-
-        let ng = 0
-        for (let i = 0; i < samples.length - 1; ++i) {
-            const dNew = samples[i][1]
-            const dOld = samples[i + 1][1]
-            if (dNew * dOld < 0 || dNew / dOld > 1) {
-                ng++
-                continue
-            }
-        }
-
-        if (ng > 0) {
-            // console.log({ ng })
-            return false
-        }
-
-        // if (s0[1] / s1[1] <= 1.1 * Math.pow(0.5, dt / this.halfLife))
-        //     return true
-
         return true
     }
 }
-
 
 class RingBuffer<T> {
     private o: number
@@ -59,9 +32,9 @@ class RingBuffer<T> {
         this.clear()
     }
 
-    at(i: number): T | undefined {
+    at(i: number): T {
         const j = (this.o + i + this.length) % this.xs.length
-        return j < this.xs.length ? this.xs[j] : undefined
+        return this.xs[j]
     }
 
     push(x: T) {
