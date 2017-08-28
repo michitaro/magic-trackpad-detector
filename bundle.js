@@ -160,44 +160,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var MagicTrackpadDetector = (function () {
     function MagicTrackpadDetector() {
         this.history = new RingBuffer(20);
-        this.T = 160;
-        this.maxN = Math.ceil(this.T / (1000 / 60));
-        this.N = Math.floor(0.8 * this.T / (1000 / 60));
+        this.tolerance = 7; // ms
+        this.interval = 1000 / 60; // events per second
+        this.minN = 5;
     }
-    // private halfLife = 200
     MagicTrackpadDetector.prototype.inertial = function (e) {
+        var h = this.history;
         var t0 = performance.now();
         var d0 = e.deltaY;
-        this.history.push([t0, d0]);
-        var samples = [];
-        for (var i = 1; i <= this.history.length; ++i) {
-            var _a = this.history.at(-i), t = _a[0], d = _a[1];
-            if (t0 - t > this.T || d * d0 < 0)
-                break;
-            samples.push([t, d]);
-        }
-        if (samples.length < this.N || samples.length > this.maxN) {
-            // console.log({ N: samples.length })
+        h.push([t0, d0]);
+        if (h.length < this.minN)
             return false;
+        for (var i = this.minN; i > 1; --i) {
+            var o = h.at(-i);
+            var n = h.at(-i + 1);
+            var dt = n[0] - o[0];
+            if (dt < this.interval - this.tolerance || this.interval + this.tolerance < dt)
+                return false;
+            if (n[1] * o[1] < 0 || n[1] / o[1] > 1)
+                return false;
         }
-        // const s1 = samples[samples.length - 1]
-        // const s0 = samples[0]
-        // const dt = s0[0] - s1[0]
-        var ng = 0;
-        for (var i = 0; i < samples.length - 1; ++i) {
-            var dNew = samples[i][1];
-            var dOld = samples[i + 1][1];
-            if (dNew * dOld < 0 || dNew / dOld > 1) {
-                ng++;
-                continue;
-            }
-        }
-        if (ng > 0) {
-            // console.log({ ng })
-            return false;
-        }
-        // if (s0[1] / s1[1] <= 1.1 * Math.pow(0.5, dt / this.halfLife))
-        //     return true
         return true;
     };
     return MagicTrackpadDetector;
@@ -210,7 +192,7 @@ var RingBuffer = (function () {
     }
     RingBuffer.prototype.at = function (i) {
         var j = (this.o + i + this.length) % this.xs.length;
-        return j < this.xs.length ? this.xs[j] : undefined;
+        return this.xs[j];
     };
     RingBuffer.prototype.push = function (x) {
         if (this.xs.length < this.n)
