@@ -11,11 +11,12 @@ export class MagicTrackpadDetector {
         h.push([t0, d0])
         if (h.length < this.minN)
             return false
-        for (let i = this.minN; i > 1; --i) {
+        for (let i = this.minN - 1; i > 1; --i) {
             const o = h.at(-i)
             const n = h.at(-i + 1)
             const dt = n[0] - o[0]
-            if (dt < this.interval - this.tolerance || this.interval + this.tolerance < dt)
+            const dv = n[1] - o[1]
+            if (dv != 0 && (dt < this.interval - this.tolerance || this.interval + this.tolerance < dt))
                 return false
             if (n[1] * o[1] < 0 || n[1] / o[1] > 1)
                 return false
