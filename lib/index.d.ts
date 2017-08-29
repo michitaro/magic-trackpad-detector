@@ -1,7 +1,8 @@
 export declare class MagicTrackpadDetector {
-    private history;
     tolerance: number;
     interval: number;
-    minN: number;
+    minN1: number;
+    minN2: number;
+    private history;
     inertial(e: WheelEvent): boolean;
 }

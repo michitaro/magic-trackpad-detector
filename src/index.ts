@@ -1,25 +1,51 @@
 export class MagicTrackpadDetector {
-    private history = new RingBuffer<[number, number]>(20)
     tolerance = 7 // ms
     interval = 1000 / 60 // events per second
-    minN = 5
+    minN1 = 7
+    minN2 = 15
+    private history = new RingBuffer<[number, number]>(Math.max(this.minN1, this.minN2))
 
     inertial(e: WheelEvent) {
         const h = this.history
         const t0 = performance.now()
         const d0 = e.deltaY
         h.push([t0, d0])
-        if (h.length < this.minN)
+
+        if (h.length < this.minN1)
             return false
-        for (let i = this.minN - 1; i > 1; --i) {
-            const o = h.at(-i)
-            const n = h.at(-i + 1)
-            const dt = n[0] - o[0]
-            const dv = n[1] - o[1]
-            if (dv != 0 && (dt < this.interval - this.tolerance || this.interval + this.tolerance < dt))
+
+        if (Math.abs(e.deltaY) > 1) {
+            for (let i = this.minN1 - 1; i > 1; --i) {
+                const o = h.at(-i)
+                const n = h.at(-i + 1)
+                const dt = n[0] - o[0]
+                if (dt < this.interval - this.tolerance || this.interval + this.tolerance < dt)
+                    return false
+                if (n[1] * o[1] < 0 || n[1] / o[1] > 1)
+                    return false
+            }
+        }
+        else {
+            if (h.length < this.minN2)
                 return false
-            if (n[1] * o[1] < 0 || n[1] / o[1] > 1)
+            const [to, vo] = h.at(- this.minN2)
+            if (Math.abs(vo) <= 1 || t0 - to > 2 * this.interval * this.minN2) {
                 return false
+            }
+            for (let i = this.minN2 - 1; i > 1; --i) {
+                const o = h.at(-i)
+                const n = h.at(-i + 1)
+                const dt = n[0] - o[0]
+                if (
+                    !(
+                        this.interval - this.tolerance <= dt && dt <= this.interval + this.tolerance ||
+                        2 * this.interval - this.tolerance <= dt && dt <= 2 * this.interval + this.tolerance
+                    )
+                )
+                    return false
+                if (n[1] * o[1] < 0 || n[1] / o[1] > 1)
+                    return false
+            }
         }
         return true
     }
