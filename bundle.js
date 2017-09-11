@@ -176,9 +176,9 @@ var MagicTrackpadDetector = (function () {
             for (var i = this.minN1 - 1; i > 1; --i) {
                 var o = h.at(-i);
                 var n = h.at(-i + 1);
-                var dt = n[0] - o[0];
-                if (dt < this.interval - this.tolerance)
-                    return false;
+                // const dt = n[0] - o[0]
+                // if (dt < this.interval - this.tolerance)
+                //     return false
                 if (n[1] * o[1] < 0 || n[1] / o[1] > 1)
                     return false;
             }
@@ -187,15 +187,16 @@ var MagicTrackpadDetector = (function () {
             if (h.length < this.minN2)
                 return false;
             var _a = h.at(-this.minN2), to = _a[0], vo = _a[1];
-            if (Math.abs(vo) <= 1 || t0 - to > 2 * this.interval * this.minN2) {
+            to;
+            if (Math.abs(vo) <= 1) {
                 return false;
             }
             for (var i = this.minN2 - 1; i > 1; --i) {
                 var o = h.at(-i);
                 var n = h.at(-i + 1);
-                var dt = n[0] - o[0];
-                if (dt < this.interval - this.tolerance)
-                    return false;
+                // const dt = n[0] - o[0]
+                // if (dt < this.interval - this.tolerance)
+                //     return false
                 if (n[1] * o[1] < 0 || n[1] / o[1] > 1)
                     return false;
             }
