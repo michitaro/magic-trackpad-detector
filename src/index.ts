@@ -1,6 +1,4 @@
 export class MagicTrackpadDetector {
-    tolerance = 5 // ms
-    interval = 1000 / 60 // events per second
     minN1 = 5
     minN2 = 15
     private history = new RingBuffer<[number, number]>(Math.max(this.minN1, this.minN2))
@@ -18,12 +16,11 @@ export class MagicTrackpadDetector {
             for (let i = this.minN1 - 1; i > 1; --i) {
                 const o = h.at(-i)
                 const n = h.at(-i + 1)
-                // const dt = n[0] - o[0]
-                // if (dt < this.interval - this.tolerance)
-                //     return false
                 if (n[1] * o[1] < 0 || n[1] / o[1] > 1)
                     return false
             }
+            if (h.at(-1)[1] == h.at(-this.minN1 + 1)[1])
+                return false
         }
         else { // |deltaY| == 1
             if (h.length < this.minN2)
@@ -36,9 +33,6 @@ export class MagicTrackpadDetector {
             for (let i = this.minN2 - 1; i > 1; --i) {
                 const o = h.at(-i)
                 const n = h.at(-i + 1)
-                // const dt = n[0] - o[0]
-                // if (dt < this.interval - this.tolerance)
-                //     return false
                 if (n[1] * o[1] < 0 || n[1] / o[1] > 1)
                     return false
             }
