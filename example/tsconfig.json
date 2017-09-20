@@ -1,6 +1,7 @@
 {
     "extends": "../src/tsconfig",
     "compilerOptions": {
-        "noUnusedLocals": true
+        "noUnusedLocals": true,
+        "declaration": false
     }
 }
