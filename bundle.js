@@ -159,7 +159,7 @@ var HistoryCanvas = (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var MagicTrackpadDetector = (function () {
     function MagicTrackpadDetector() {
-        this.minN1 = 5;
+        this.minN1 = 10;
         this.minN2 = 15;
         this.history = new RingBuffer(Math.max(this.minN1, this.minN2));
     }
@@ -177,14 +177,14 @@ var MagicTrackpadDetector = (function () {
                 if (n[1] * o[1] < 0 || n[1] / o[1] > 1)
                     return false;
             }
-            if (h.at(-1)[1] == h.at(-this.minN1 + 1)[1])
+            if (h.at(-1)[1] == h.at(-(this.minN1 - 1))[1]) {
                 return false;
+            }
         }
         else {
             if (h.length < this.minN2)
                 return false;
             var _a = h.at(-this.minN2), to = _a[0], vo = _a[1];
-            to;
             if (Math.abs(vo) <= 1) {
                 return false;
             }
