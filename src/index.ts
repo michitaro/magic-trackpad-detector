@@ -1,5 +1,5 @@
 export class MagicTrackpadDetector {
-    minN1 = 7
+    minN1 = 10
     minN2 = 15
     private history = new RingBuffer<[number, number]>(Math.max(this.minN1, this.minN2))
 
